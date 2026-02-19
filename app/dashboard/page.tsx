@@ -130,7 +130,7 @@ export default function DashboardPage() {
                 This stays honest because it’s fed by your daily actions.
               </div>
             </div>
-            <Chip className="bg-white/5 border-white/10">Week score: {kpis.score}%</Chip>
+           <Chip>Week score: {kpis.score}%</Chip>
           </div>
         </GlassCard>
 
