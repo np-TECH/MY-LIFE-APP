@@ -1,15 +1,13 @@
 import "./globals.css";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Njabulo OS",
-  description: "Personal operating system (Monday x Notion x Monarch)",
-};
+import { BackgroundFX } from "@/components/BackgroundFX";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="min-h-screen text-white">
+        <BackgroundFX />
+        <div className="relative z-10">{children}</div>
+      </body>
     </html>
   );
 }
