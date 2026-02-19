@@ -1,16 +1,28 @@
 "use client";
 
 import Shell from "@/components/shell";
-import { Card, Chip } from "@/components/ui";
+import { Chip } from "@/components/ui";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import type { DailyEntry, PipelineItem, WeeklyReview } from "@/lib/types";
 import { useRequireAuth } from "@/components/authGate";
 import { startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from "recharts";
 import { weeklyScorePct } from "@/lib/scoring";
+import { GlassCard } from "@/components/ui/GlassCard";
 
-function iso(d: Date) { return d.toISOString().slice(0,10); }
+function iso(d: Date) {
+  return d.toISOString().slice(0, 10);
+}
 
 export default function DashboardPage() {
   const { loading } = useRequireAuth();
@@ -24,8 +36,16 @@ export default function DashboardPage() {
     if (!user) return;
 
     const [d1, w1, p1] = await Promise.all([
-      supabase.from("daily_entries").select("*").eq("user_id", user.id).order("entry_date", { ascending: true }),
-      supabase.from("weekly_reviews").select("*").eq("user_id", user.id).order("week_start", { ascending: true }),
+      supabase
+        .from("daily_entries")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("entry_date", { ascending: true }),
+      supabase
+        .from("weekly_reviews")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("week_start", { ascending: true }),
       supabase.from("pipeline_items").select("*").eq("user_id", user.id),
     ]);
 
@@ -88,52 +108,62 @@ export default function DashboardPage() {
   }, [weekly]);
 
   const pipelineByStage = useMemo(() => {
-    const stages = ["Sent","Responded","Meeting","Pitch","Closed"];
+    const stages = ["Sent", "Responded", "Meeting", "Pitch", "Closed"];
     return stages.map((s) => ({
       stage: s,
-      value: pipeline.filter((p) => p.stage === s).reduce((a, x) => a + Number(x.value_potential ?? 0), 0),
+      value: pipeline
+        .filter((p) => p.stage === s)
+        .reduce((a, x) => a + Number(x.value_potential ?? 0), 0),
     }));
   }, [pipeline]);
 
   return (
     <Shell>
       <div className="space-y-4">
-        <Card className="p-6 bg-accent border-white/10">
+        {/* HERO */}
+        <GlassCard className="p-6">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <div className="text-xs text-white/70">Dashboard</div>
               <div className="text-2xl font-bold">Your momentum, measured</div>
-              <div className="mt-2 text-sm text-white/70">This stays honest because it’s fed by your daily actions.</div>
+              <div className="mt-2 text-sm text-white/70">
+                This stays honest because it’s fed by your daily actions.
+              </div>
             </div>
-            <Chip>Week score: {kpis.score}%</Chip>
+            <Chip className="bg-white/5 border-white/10">Week score: {kpis.score}%</Chip>
           </div>
-        </Card>
+        </GlassCard>
 
+        {/* KPI ROW */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-          <Card className="p-5">
+          <GlassCard className="p-5">
             <div className="text-xs text-white/60">Touchpoints (this week)</div>
             <div className="mt-1 text-3xl font-bold">{kpis.touch}</div>
             <div className="mt-2 text-xs text-white/50">Target: 25</div>
-          </Card>
-          <Card className="p-5">
+          </GlassCard>
+
+          <GlassCard className="p-5">
             <div className="text-xs text-white/60">Meetings (this week)</div>
             <div className="mt-1 text-3xl font-bold">{kpis.meet}</div>
             <div className="mt-2 text-xs text-white/50">Target: 2</div>
-          </Card>
-          <Card className="p-5">
+          </GlassCard>
+
+          <GlassCard className="p-5">
             <div className="text-xs text-white/60">Pitches (this week)</div>
             <div className="mt-1 text-3xl font-bold">{kpis.pitch}</div>
             <div className="mt-2 text-xs text-white/50">Target: 1</div>
-          </Card>
-          <Card className="p-5">
+          </GlassCard>
+
+          <GlassCard className="p-5">
             <div className="text-xs text-white/60">Weekly score</div>
             <div className="mt-1 text-3xl font-bold">{kpis.score}%</div>
             <div className="mt-2 text-xs text-white/50">Aim: 75%+</div>
-          </Card>
+          </GlassCard>
         </div>
 
+        {/* CHARTS */}
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <Card className="p-5">
+          <GlassCard className="p-5">
             <div className="text-sm font-bold">Weekly score trend</div>
             <div className="mt-4 h-[260px]">
               {weeklyTrend.length ? (
@@ -141,30 +171,50 @@ export default function DashboardPage() {
                   <LineChart data={weeklyTrend}>
                     <XAxis dataKey="week" stroke="rgba(255,255,255,0.45)" />
                     <YAxis stroke="rgba(255,255,255,0.45)" />
-                    <Tooltip contentStyle={{ background: "#0B0F17", border: "1px solid rgba(255,255,255,0.10)" }} />
-                    <Line type="monotone" dataKey="score" stroke="rgba(34,211,238,0.85)" strokeWidth={2} dot={false} />
+                    <Tooltip
+                      contentStyle={{
+                        background: "#0B0F17",
+                        border: "1px solid rgba(255,255,255,0.10)",
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="score"
+                      stroke="rgba(16,185,129,0.85)"
+                      strokeWidth={2}
+                      dot={false}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="text-sm text-white/60">No weekly reviews yet. Update Planner to populate this chart.</div>
+                <div className="text-sm text-white/60">
+                  No weekly reviews yet. Update Planner to populate this chart.
+                </div>
               )}
             </div>
-          </Card>
+          </GlassCard>
 
-          <Card className="p-5">
+          <GlassCard className="p-5">
             <div className="text-sm font-bold">Pipeline value by stage</div>
             <div className="mt-4 h-[260px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={pipelineByStage}>
                   <XAxis dataKey="stage" stroke="rgba(255,255,255,0.45)" />
                   <YAxis stroke="rgba(255,255,255,0.45)" />
-                  <Tooltip contentStyle={{ background: "#0B0F17", border: "1px solid rgba(255,255,255,0.10)" }} />
-                  <Bar dataKey="value" fill="rgba(124,58,237,0.65)" />
+                  <Tooltip
+                    contentStyle={{
+                      background: "#0B0F17",
+                      border: "1px solid rgba(255,255,255,0.10)",
+                    }}
+                  />
+                  <Bar dataKey="value" fill="rgba(16,185,129,0.55)" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <div className="mt-2 text-xs text-white/55">Set realistic value potentials so this reflects your true pipeline.</div>
-          </Card>
+            <div className="mt-2 text-xs text-white/55">
+              Set realistic value potentials so this reflects your true pipeline.
+            </div>
+          </GlassCard>
         </div>
       </div>
     </Shell>
